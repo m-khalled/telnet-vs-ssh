@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Telnet vs SSH</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0a1020; --surface:#111a30; --surface2:#16213c; --line:#223056;
+  --text:#e6ecf8; --muted:#8fa0c2; --accent:#3b82f6; --accent-soft:#60a5fa;
+  --font:"Segoe UI",Tahoma,"Noto Sans Arabic","Noto Sans",Arial,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SF Mono",Menlo,"Courier New",monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;font-size:16px}
+main{max-width:980px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:2rem;margin:0 0 6px;font-weight:700}
+h2{font-size:1.25rem;margin:44px 0 14px;font-weight:700}
+.sub{color:var(--muted);margin:0 0 28px}
+.en{direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:12px 16px;text-align:right;vertical-align:top;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+thead th{background:var(--surface2);font-size:1rem;border-bottom:2px solid var(--accent)}
+thead th.t{color:var(--muted)}
+thead th.s{color:var(--accent-soft)}
+tbody th{font-weight:600;color:var(--accent-soft);white-space:nowrap;width:20%}
+td{width:40%}
+tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+code.inl{font-family:var(--mono);font-size:.88em;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+.cmd-block{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;margin-bottom:12px}
+.cmd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--line)}
+.cmd-head span{font-weight:600}
+button.copy{font:inherit;font-size:.85rem;color:var(--text);background:transparent;border:1px solid var(--accent);border-radius:6px;padding:4px 14px;cursor:pointer}
+button.copy:hover{background:var(--accent)}
+button.copy:focus-visible{outline:2px solid var(--accent-soft);outline-offset:2px}
+pre{margin:0;padding:16px;direction:ltr;text-align:left;overflow-x:auto;font-family:var(--mono);font-size:.92rem;line-height:1.9}
+.ln{display:block;white-space:pre}
+.p{color:var(--accent-soft)}
+.c{color:var(--text)}
+.note{color:var(--muted);font-size:.93rem;margin:0 0 8px}
+</style>
+</head>
+<body>
+<main>
+  <h1><span class="en">Telnet</span> vs <span class="en">SSH</span></h1>
+  <p class="sub">مقارنة بين <span class="en">Telnet</span> و <span class="en">SSH</span> وإعدادهم على <span class="en">Cisco</span></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>وجه المقارنة</th>
+          <th class="t"><span class="en">Telnet</span></th>
+          <th class="s"><span class="en">SSH</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th>الاسم الكامل</th>
+          <td><span class="en">Teletype Network</span></td>
+          <td><span class="en">Secure Shell</span></td></tr>
+        <tr><th><span class="en">Port</span></th>
+          <td><span class="en">TCP 23</span></td>
+          <td><span class="en">TCP 22</span></td></tr>
+        <tr><th><span class="en">Transport Protocol (TCP/UDP)</span></th>
+          <td><span class="en">TCP</span></td>
+          <td><span class="en">TCP</span></td></tr>
+        <tr><th><span class="en">Encryption</span></th>
+          <td>مفيش، كل حاجة <span class="en">plain text</span></td>
+          <td>مشفر بالكامل (<span class="en">AES, ChaCha20</span>)</td></tr>
+        <tr><th><span class="en">Authentication</span></th>
+          <td><span class="en">Username/password</span> بـ <span class="en">plain text</span> بس</td>
+          <td><span class="en">Password, Public key, Certificates, MFA</span></td></tr>
+        <tr><th><span class="en">Server Authentication</span></th>
+          <td>مفيش، مفيش طريقة تتأكد بيها إنك بتكلم السيرفر الصح</td>
+          <td><span class="en">Host key verification (fingerprint)</span></td></tr>
+        <tr><th><span class="en">Sniffing</span></th>
+          <td>الـ <span class="en">credentials</span> والـ <span class="en">commands</span> بتظهر <span class="en">clear text</span> في <span class="en">Wireshark</span></td>
+          <td>الـ <span class="en">payload</span> بيظهر <span class="en">encrypted</span> بس</td></tr>
+        <tr><th><span class="en">Key Exchange</span></th>
+          <td>مفيش</td>
+          <td><span class="en">Diffie-Hellman / ECDH</span></td></tr>
+        <tr><th><span class="en">Integrity</span></th>
+          <td>مفيش</td>
+          <td><span class="en">MAC / AEAD</span> (زي <span class="en">HMAC-SHA2</span>) لاكتشاف أي تعديل في الداتا</td></tr>
+        <tr><th><span class="en">Cisco Setup</span></th>
+          <td><code class="inl">line vty</code> + <code class="inl">password</code> + <code class="inl">login</code> + <code class="inl">transport input telnet</code></td>
+          <td><code class="inl">hostname</code> + <code class="inl">ip domain-name</code> + <code class="inl">crypto key generate rsa</code> + <span class="en">local user</span> + <code class="inl">transport input ssh</code></td></tr>
+        <tr><th><span class="en">MITM</span></th>
+          <td>سهل جداً</td>
+          <td>صعب، والـ <span class="en">host key</span> بيكشف الهجوم لو اتغير</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>أوامر <span class="en">Telnet</span></h2>
+  <div class="cmd-block">
+    <div class="cmd-head"><span><span class="en">Telnet on Cisco</span></span><button class="copy" type="button">Copy</button></div>
+<pre><span class="ln"><span class="p">Router&gt;</span> <span class="c">enable</span></span>
+<span class="ln"><span class="p">Router#</span> <span class="c">configure terminal</span></span>
+<span class="ln"><span class="p">Router(config)#</span> <span class="c">enable secret cisco</span></span>
+<span class="ln"><span class="p">Router(config)#</span> <span class="c">line vty 0 4</span></span>
+<span class="ln"><span class="p">Router(config-line)#</span> <span class="c">password cisco123</span></span>
+<span class="ln"><span class="p">Router(config-line)#</span> <span class="c">login</span></span>
+<span class="ln"><span class="p">Router(config-line)#</span> <span class="c">transport input telnet</span></span>
+<span class="ln"><span class="p">Router(config-line)#</span> <span class="c">end</span></span>
+<span class="ln"><span class="p">Router#</span> <span class="c">copy running-config startup-config</span></span></pre>
+  </div>
+
+  <p class="note">الـ <span class="en">IP</span> ده مثال، حط الـ <span class="en">IP</span> بتاع الـ <span class="en">interface</span> في الراوتر.</p>
+  <div class="cmd-block">
+    <div class="cmd-head"><span><span class="en">Telnet from PC (Command Prompt)</span></span><button class="copy" type="button">Copy</button></div>
+<pre><span class="ln"><span class="p">C:\&gt;</span> <span class="c">telnet 192.168.1.1</span></span></pre>
+  </div>
+
+  <h2>أوامر <span class="en">SSH</span></h2>
+  <p class="note">لازم <span class="en">hostname</span> و <span class="en">ip domain-name</span> يتكتبوا قبل <span class="en">crypto key generate rsa</span>، وإلا الـ <span class="en">key</span> مش هيتعمل. لاحظ إن الـ <span class="en">prompt</span> بيتغير لـ <span class="en">R1</span> بعد أمر <span class="en">hostname</span>.</p>
+  <div class="cmd-block">
+    <div class="cmd-head"><span><span class="en">SSH on Cisco</span></span><button class="copy" type="button">Copy</button></div>
+<pre><span class="ln"><span class="p">Router&gt;</span> <span class="c">enable</span></span>
+<span class="ln"><span class="p">Router#</span> <span class="c">configure terminal</span></span>
+<span class="ln"><span class="p">Router(config)#</span> <span class="c">hostname R1</span></span>
+<span class="ln"><span class="p">R1(config)#</span> <span class="c">ip domain-name lab.local</span></span>
+<span class="ln"><span class="p">R1(config)#</span> <span class="c">crypto key generate rsa modulus 2048</span></span>
+<span class="ln"><span class="p">R1(config)#</span> <span class="c">username admin privilege 15 secret StrongPass</span></span>
+<span class="ln"><span class="p">R1(config)#</span> <span class="c">enable secret cisco</span></span>
+<span class="ln"><span class="p">R1(config)#</span> <span class="c">ip ssh version 2</span></span>
+<span class="ln"><span class="p">R1(config)#</span> <span class="c">line vty 0 4</span></span>
+<span class="ln"><span class="p">R1(config-line)#</span> <span class="c">login local</span></span>
+<span class="ln"><span class="p">R1(config-line)#</span> <span class="c">transport input ssh</span></span>
+<span class="ln"><span class="p">R1(config-line)#</span> <span class="c">end</span></span>
+<span class="ln"><span class="p">R1#</span> <span class="c">copy running-config startup-config</span></span></pre>
+  </div>
+
+  <p class="note">الـ <span class="en">IP</span> ده مثال، حط الـ <span class="en">IP</span> بتاع الـ <span class="en">interface</span> في الراوتر. <code class="inl">-l</code> معناها الـ <span class="en">username</span>.</p>
+  <div class="cmd-block">
+    <div class="cmd-head"><span><span class="en">SSH from PC (Command Prompt)</span></span><button class="copy" type="button">Copy</button></div>
+<pre><span class="ln"><span class="p">C:\&gt;</span> <span class="c">ssh -l admin 192.168.1.1</span></span></pre>
+  </div>
+</main>
+<script>
+document.querySelectorAll('button.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var block=btn.closest('.cmd-block');
+    var text=Array.prototype.map.call(block.querySelectorAll('.ln .c'),function(e){return e.textContent}).join('\n');
+    function done(){var o=btn.textContent;btn.textContent='Copied';setTimeout(function(){btn.textContent=o},1500)}
+    function fallback(){
+      try{var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);done()}catch(e){}
+    }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else{fallback()}
+    }catch(e){fallback()}
+  });
+});
+</script>
+</body>
+</html>
